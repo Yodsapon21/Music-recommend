@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Music Recommender</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1> Music Recommender</h1>
+        <p class="subtitle">พิมพ์ชื่อเพลงที่ชอบ แล้ว AI จะแนะนำเพลงที่คล้ายกัน</p>
+
+        <div class="search-box">
+            <input type="text" id="songInput" placeholder="เช่น Alone with You, Shape of You ..." />
+            <button onclick="recommend()">แนะนำเพลง</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function recommend() {
+            const songName = document.getElementById('songInput').value.trim();
+            if (!songName) return;
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p class="loading"> กำลังค้นหา...</p>';
+
+            const response = await fetch('/recommend', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ song_name: songName })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                resultDiv.innerHTML = `<p class="error">❌ ${data.error}</p>`;
+                return;
+            }
+
+            let html = `
+                <div class="selected-song">
+                    <p>🎵 เพลงที่เลือก: <strong>${data.selected.track_name}</strong> — ${data.selected.artists}</p>
+                </div>
+                <h2>เพลงที่แนะนำ</h2>
+                <div class="cards">
+            `;
+
+            data.recommendations.forEach((song, i) => {
+                html += `
+                    <div class="card">
+                        <div class="rank">${i + 1}</div>
+                        <div class="info">
+                            <p class="track">${song.track_name}</p>
+                            <p class="artist">${song.artists}</p>
+                            <div class="stats">
+                                <span>💃 ${song.danceability}</span>
+                                <span>⚡ ${song.energy}</span>
+                                <span>😊 ${song.valence}</span>
+                                <span class="sim">คล้าย ${(song.similarity * 100).toFixed(1)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        }
+
+        document.getElementById('songInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') recommend();
+        });
+    </script>
+</body>
+</html>
