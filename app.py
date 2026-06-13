@@ -9,7 +9,7 @@ app = Flask(__name__)
 # โหลดข้อมูลตอนเริ่ม server
 import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-df = pd.read_csv(os.path.join(BASE_DIR, 'dataset.csv'), index_col=0, nrows=8200)
+df = pd.read_csv(os.path.join(BASE_DIR, 'dataset.csv'), index_col=0, nrows=7200)
 df = df.reset_index(drop=True)
 
 features = ['danceability', 'energy', 'valence', 'tempo', 'acousticness', 'speechiness']
